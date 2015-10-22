@@ -1,0 +1,10 @@
+Class 1: Week3SPOT
+1000 1000 = StartApp()
+
+Class 2: ConnectionSPOT
+0100 1000 constructor
+0100 0100 receive()	REMOVED CODE AVAILABLE
+0100 1100 send()
+0100 0010 close()
+0100 1010 getOutputStreamConn()
+0100 0110 sendSingleUTFDatagram()
