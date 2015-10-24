@@ -1,7 +1,7 @@
 /**
 * @author Povilas Marcinkevicius
 * 
-* @version 1.0.0
+* @version 1.0.1
 **/
 
 package org.sunspotworld;
@@ -22,7 +22,7 @@ public class Week3SPOT extends MIDlet
   private final ILightSensor lightSensor = (ILightSensor) Resources.lookup(ILightSensor.class);
   private final ITemperatureInput temperatureSensor = (ITemperatureInput) Resources.lookup(ITemperatureInput.class);
 
-  private /*ConnectionSPOT conn*/ DataOutputStream streamConn = ConnectionSPOT.getClosestConnection(127, ConnectionSPOT.PORT_BASE_SEARCH).getOutputStreamConn();
+  private DataOutputStream streamConn = ConnectionProtocolSPOT.getOutputStreamConn(ConnectionProtocolSPOT.getClosestConnection(127, ConnectionProtocolSPOT.PORT_BASE_SEARCH));
   
   protected void pauseApp() {}
   protected void destroyApp(boolean unconditional) throws MIDletStateChangeException {}
@@ -32,10 +32,6 @@ public class Week3SPOT extends MIDlet
     while(true)
     {
       long startTime = System.currentTimeMillis();
-      /*Radiogram radiogram = conn.getNewRadiogram();
-      radiogram.writeDouble(lightSensor.getAverageValue() * 2.0);
-      radiogram.writeDouble(temperatureSensor.getCelsius());
-      conn.send();*/
 
       try
       {
@@ -44,7 +40,7 @@ public class Week3SPOT extends MIDlet
         streamConn.writeLong(System.currentTimeMillis());
       }
       catch(IOException e)
-      { ConnectionSPOT.throwError(e, 17); }
+      { ConnectionSPOT.throwError(e, 1, 1); }
 
       Blinker.blink(500, 0, 0, 255, 0, 128, 1); // Right green LED - transmitting
       Utils.sleep(SAMPLE_PERIOD - (System.currentTimeMillis() - startTime));
