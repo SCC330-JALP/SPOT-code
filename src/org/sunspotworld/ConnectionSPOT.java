@@ -69,6 +69,6 @@ public class ConnectionSPOT
     singleConn.send();
     singleConn.close();
 
-    Blinker.blinkAndWait(1000, 1000, 255, 0, 0, classNo | (exceptionNo << 4), 1000);
+    Blinker.blinkAndWait(1000, 1000, 255, 0, 0, classNo + exceptionNo * 16, 1000);
   }
 }

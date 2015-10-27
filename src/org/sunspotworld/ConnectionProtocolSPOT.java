@@ -50,8 +50,7 @@ public class ConnectionProtocolSPOT
     
     final ConnectionSPOT conn = new ConnectionSPOT(ConnectionSPOT.LISTEN, PORT_BASE_SEARCH_RESPONSE, 10);
     final Entry responses[] = new Entry[MAX_FOUND_CONNS];
-    final int responseNum[] = new int[1];
-    responseNum[0] = 0;
+    final int responseNum[] = {0};
 
     Thread listener = new Thread(new Runnable()
     {
@@ -71,6 +70,8 @@ public class ConnectionProtocolSPOT
     listener.start();
     Utils.sleep(FIND_CONNS_TIME);
     listener.interrupt();
+    listener.interrupt(); // Double tap - want to kill, not just stop
+    conn.close();
 
     // No responses - return null
     if(responseNum[0] == 0)
@@ -85,20 +86,19 @@ public class ConnectionProtocolSPOT
       if(responses[i].signalStr > bestEntry.signalStr)
         bestEntry = responses[i];
 
-    Blinker.blinkAndWait(800, 200, 0, 0, 255, responseNum[0], 1);
-    Blinker.blinkAndWait(800, 200, 0, 0, 255, bestEntry.zone, 1);
-    conn.close();
+    Blinker.blinkAndWait(800, 200, 0, 0, 255, responseNum[0], 1); // Number of offers
+    Blinker.blinkAndWait(800, 200, 0, 0, 255, bestEntry.zone, 1); // Zone of connected Base
     return new ConnectionSPOT(bestEntry.addr, port, packetSize);
   }
   
   // MUST call getClosestConnection first
-  public static DataOutputStream getOutputStreamConn(ConnectionSPOT connection)
+  public static DataOutputStream getOutputStreamConn(ConnectionSPOT connection, String command)
   {
     DataOutputStream stream = null;
     
     try
     {
-      connection.getNewRadiogram().writeUTF(STREAM_CONN);
+      connection.getNewRadiogram().writeUTF(STREAM_CONN + command);
       connection.send();
 
       stream = ((RadiostreamConnection) Connector.open("radiostream://" + connection.address + ":" + STREAM_PORT)).openDataOutputStream();
