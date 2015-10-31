@@ -9,6 +9,7 @@ import javax.microedition.io.Connector;
 
 /**
  * @author Povilas Marcinkevicius
+ * @version 1.1.2
  */
 public class ConnectionProtocolSPOT
 {

@@ -1,9 +1,3 @@
-/**
-* @author Povilas Marcinkevicius
-* 
-* @version 1.0.1
-**/
-
 package org.sunspotworld;
 
 import javax.microedition.midlet.MIDlet;
@@ -16,7 +10,11 @@ import com.sun.spot.util.Utils;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class Week3SPOT extends MIDlet
+/**
+* @author Povilas Marcinkevicius
+* @version 1.2.3
+**/
+public class Week4SPOT extends MIDlet
 {
   private static final String COMMAND_IDLE = "idle";
   private static final String COMMAND_ZONE_DATA = "zone";

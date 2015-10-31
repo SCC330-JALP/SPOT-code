@@ -6,8 +6,7 @@ import javax.microedition.io.Connector;
 
 /**
  * @author Povilas Marcinkevicius
- * 
- * @version 1.0.1
+ * @version 1.0.3
  */
 public class ConnectionSPOT
 {

@@ -6,8 +6,7 @@ import com.sun.spot.util.Utils;
 
 /**
  * @author Povilas Marcinkevicius
- * 
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class Blinker
 {
