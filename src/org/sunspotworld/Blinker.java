@@ -41,4 +41,7 @@ public class Blinker
       Utils.sleep(offMs);
     }
   }
+  
+  public static void blinkAndWaitError(int classNo, int exceptionNo)
+  { blinkAndWait(1000, 1000, 255, 0, 0, classNo + exceptionNo * 16, 1000); }
 }

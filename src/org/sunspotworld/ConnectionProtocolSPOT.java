@@ -14,8 +14,8 @@ import javax.microedition.io.Connector;
 public class ConnectionProtocolSPOT
 {
   // Make sure these match with the PC version!
-  private static final String FIND_CONNS = "find";
-  private static final String STREAM_CONN = "strm";
+  public static final String STREAM_KILL = "kill";
+  public static final String STREAM_CONN = "strm";
   private static final int MAX_FOUND_CONNS = 20;
   private static final int FIND_CONNS_TIME = 5000;
   
@@ -24,7 +24,7 @@ public class ConnectionProtocolSPOT
   public static final int PORT_TO_PC_DATAGRAMS = 35;
   public static final int STREAM_PORT = 36;
   
-  public static ConnectionSPOT getClosestConnection(int packetSize, int port)
+  public static String getClosestBaseMac()
   {
     class Entry
     {
@@ -40,14 +40,14 @@ public class ConnectionProtocolSPOT
       }
     }
 
-    // Ask to introduce and listen
-    ConnectionSPOT singleConn = new ConnectionSPOT(ConnectionSPOT.BROADCAST, PORT_BASE_SEARCH, 127);
+    // Ask to introduce and listen; No longer applicable; Bases broadcast constantly
+    /*ConnectionSPOT singleConn = new ConnectionSPOT(ConnectionSPOT.BROADCAST, PORT_BASE_SEARCH, 127);
     try
     { singleConn.getNewRadiogram().writeUTF(FIND_CONNS); }
     catch(IOException e)
     { ConnectionSPOT.throwError(e, 3, 1); }
     singleConn.send();
-    singleConn.close();
+    singleConn.close();*/
     
     final ConnectionSPOT conn = new ConnectionSPOT(ConnectionSPOT.LISTEN, PORT_BASE_SEARCH_RESPONSE, 10);
     final Entry responses[] = new Entry[MAX_FOUND_CONNS];
@@ -63,23 +63,19 @@ public class ConnectionProtocolSPOT
           responses[responseNum[0]] = new Entry(radiogram.readInt(), radiogram.getAddress(), radiogram.getRssi());
           responseNum[0]++;
         }
-        catch(IOException e)
-        { /* Nothing as it's the interrupt */ }
+        catch(Exception e)
+        { return; } // Just stop when interrupted
       }
     });
 
     listener.start();
     Utils.sleep(FIND_CONNS_TIME);
     listener.interrupt();
-    listener.interrupt(); // Double tap - want to kill, not just stop
-    conn.close();
+    conn.close(); // Should close automatically, but to be safe
 
     // No responses - return null
     if(responseNum[0] == 0)
-    {
-      Blinker.blink(1000, 1000, 0, 0, 255, 195, 3); // 1100 0011 BLUE LEDs
       return null;
-    }
 
     // Select the strongest response and return connection to it
     Entry bestEntry = responses[0];
@@ -87,27 +83,25 @@ public class ConnectionProtocolSPOT
       if(responses[i].signalStr > bestEntry.signalStr)
         bestEntry = responses[i];
 
-    Blinker.blinkAndWait(800, 200, 0, 0, 255, responseNum[0], 1); // Number of offers
-    Blinker.blinkAndWait(800, 200, 0, 0, 255, bestEntry.zone, 1); // Zone of connected Base
-    return new ConnectionSPOT(bestEntry.addr, port, packetSize);
+    return bestEntry.addr;
   }
   
   // MUST call getClosestConnection first
   public static DataOutputStream getOutputStreamConn(ConnectionSPOT connection, String command)
   {
-    DataOutputStream stream = null;
-    
     try
     {
       connection.getNewRadiogram().writeUTF(STREAM_CONN + command);
       connection.send();
 
-      stream = ((RadiostreamConnection) Connector.open("radiostream://" + connection.address + ":" + STREAM_PORT)).openDataOutputStream();
+      DataOutputStream stream = ((RadiostreamConnection) Connector.open("radiostream://" + connection.address + ":" + STREAM_PORT)).openDataOutputStream();
+      Blinker.blinkAndWait(1500, 0, 0, 0, 255, 60, 1); // 0011 1100 BLUE LEDs
+      return stream;
     }
     catch(IOException e)
-    { ConnectionSPOT.throwError(e, 3, 2); }
-    
-    Blinker.blinkAndWait(1500, 0, 0, 0, 255, 60, 1); // 0011 1100 BLUE LEDs
-    return stream;
+    {
+      Blinker.blinkAndWait(1500, 0, 255, 0, 0, 60, 1); // 0011 1100 RED LEDs
+      return null;
+    }
   }
 }

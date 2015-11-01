@@ -10,6 +10,9 @@ import javax.microedition.io.Connector;
  */
 public class ConnectionSPOT
 {
+  public static final boolean PRINT_REMOTE = true;
+  public static ConnectionSPOT printRemoteConn = null;
+  
   public static final String BROADCAST = "broadcast";
   public static final String LISTEN = "";
   
@@ -27,7 +30,7 @@ public class ConnectionSPOT
       radiogram = new Radiogram(radiogramSize, conn);
     }
     catch(IOException e)
-    { throwError(e, 2, 1); }
+    { Blinker.blinkAndWaitError(2, 1); }
   }
   
   public Radiogram receive() throws IOException
@@ -41,7 +44,7 @@ public class ConnectionSPOT
     try
     { conn.send(radiogram); }
     catch (IOException e)
-    { throwError(e, 2, 2); }
+    { Blinker.blinkAndWaitError(2, 2); }
   }
   
   public void close()
@@ -49,7 +52,7 @@ public class ConnectionSPOT
     try
     { conn.close(); }
     catch(IOException e)
-    { throwError(e, 2, 3); }
+    { Blinker.blinkAndWaitError(2, 3); }
   }
   
   public Radiogram getNewRadiogram()
@@ -58,16 +61,20 @@ public class ConnectionSPOT
     return radiogram;
   }
   
-  public static final void throwError(Exception e, int classNo, int exceptionNo)
+  public static final void printRemote(String message)
   {
-    ConnectionSPOT singleConn = new ConnectionSPOT(BROADCAST, ConnectionProtocolSPOT.PORT_BASE_SEARCH, 127);
-    try
-    { singleConn.getNewRadiogram().writeUTF(e.toString()); }
-    catch(IOException e2)
-    { /* If this does not work calling itself is pointless */ }
-    singleConn.send();
-    singleConn.close();
-
-    Blinker.blinkAndWait(1000, 1000, 255, 0, 0, classNo + exceptionNo * 16, 1000);
+    if(PRINT_REMOTE)
+    {
+      if(printRemoteConn == null)
+        printRemoteConn = new ConnectionSPOT(BROADCAST, ConnectionProtocolSPOT.PORT_BASE_SEARCH, 127);
+       
+      try
+      {
+        printRemoteConn.getNewRadiogram().writeUTF(message);
+        printRemoteConn.send();
+      }
+      catch(IOException e)
+      { Blinker.blinkAndWaitError(2, 4); }
+    }
   }
 }
